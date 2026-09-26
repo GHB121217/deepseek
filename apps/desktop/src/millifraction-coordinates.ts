@@ -11,26 +11,32 @@ export interface MillifractionCoordinatesConfig {
   readonly enabled: boolean
 }
 
-const DEFAULT_CONFIG: MillifractionCoordinatesConfig = {
-  enabled: true,
+/**
+ * Shipped millifraction default when the profile has no saved value.
+ * Windows packages start in millifraction. macOS and Linux start in pixels.
+ * @param platform - Node `process.platform`. Defaults to this process.
+ * @returns whether new overlay chats use 0–1000 millifraction.
+ */
+export function defaultMillifractionEnabled(platform: NodeJS.Platform = process.platform): boolean {
+  return platform === 'win32'
 }
 
 /**
  * Read the millifraction-coordinates default.
  * @param profileDir - Desktop profile directory.
- * @returns stored values, or the shipped default when absent or invalid.
+ * @returns stored values, or the platform shipped default when absent or invalid.
  */
 export function readMillifractionCoordinates(profileDir: string): MillifractionCoordinatesConfig {
   try {
     const value: unknown = JSON.parse(readFileSync(join(profileDir, MILLIFRACTION_COORDINATES_FILE), 'utf8'))
-    if (typeof value !== 'object' || value === null || Array.isArray(value)) return DEFAULT_CONFIG
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) return shippedDefault()
     const record = value as { enabled?: unknown }
     return {
-      enabled: typeof record.enabled === 'boolean' ? record.enabled : DEFAULT_CONFIG.enabled,
+      enabled: typeof record.enabled === 'boolean' ? record.enabled : shippedDefault().enabled,
     }
   } catch {
-    // Missing or invalid profile JSON uses shipped defaults.
-    return DEFAULT_CONFIG
+    // Missing or invalid profile JSON uses the platform shipped default.
+    return shippedDefault()
   }
 }
 
@@ -47,6 +53,10 @@ export function writeMillifractionCoordinates(
     join(profileDir, MILLIFRACTION_COORDINATES_FILE),
     `${JSON.stringify({ enabled: config.enabled }, undefined, 2)}\n`,
   )
+}
+
+function shippedDefault(): MillifractionCoordinatesConfig {
+  return { enabled: defaultMillifractionEnabled() }
 }
 
 /** Overlay Computer Use click encoding derived from the millifraction default. */

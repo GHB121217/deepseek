@@ -3,7 +3,7 @@ import { Context } from '@deepseek-ai/cordis'
 import {
   apply,
   clearOrbCoordinateMode,
-  DEFAULT_ORB_COORDINATE_MODE,
+  defaultOrbCoordinateMode,
   isOrbCoordinateMode,
   name,
   setOrbCoordinateMode,
@@ -18,15 +18,22 @@ describe('computer-use-orb-coordinate-mode plugin', () => {
     expect(name).toBe('computer-use-orb-coordinate-mode')
   })
 
-  it('publishes millifraction until Electron pushes pixel', () => {
+  it('ships millifraction on Windows and pixels on macOS and Linux', () => {
+    expect(defaultOrbCoordinateMode('win32')).toBe('millifraction')
+    expect(defaultOrbCoordinateMode('darwin')).toBe('pixel')
+    expect(defaultOrbCoordinateMode('linux')).toBe('pixel')
+  })
+
+  it('publishes the platform default until Electron pushes an encoding', () => {
     const ctx = new Context()
     apply(ctx)
-    expect(ctx.orbCoordinateMode.currentMode()).toBe('millifraction')
-    expect(DEFAULT_ORB_COORDINATE_MODE).toBe('millifraction')
+    expect(ctx.orbCoordinateMode.currentMode()).toBe(defaultOrbCoordinateMode())
     setOrbCoordinateMode('millifraction')
     expect(ctx.orbCoordinateMode.currentMode()).toBe('millifraction')
     setOrbCoordinateMode('pixel')
     expect(ctx.orbCoordinateMode.currentMode()).toBe('pixel')
+    clearOrbCoordinateMode()
+    expect(ctx.orbCoordinateMode.currentMode()).toBe(defaultOrbCoordinateMode())
   })
 
   it('accepts only millifraction and pixel tokens', () => {

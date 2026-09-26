@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import {
   MILLIFRACTION_COORDINATES_FILE,
+  defaultMillifractionEnabled,
   orbCoordinateModeFor,
   readMillifractionCoordinates,
   writeMillifractionCoordinates,
@@ -16,10 +17,13 @@ afterEach(() => {
 })
 
 describe('millifraction coordinates config', () => {
-  it('defaults to millifraction on', () => {
+  it('defaults to millifraction on Windows and pixels on macOS and Linux', () => {
     const root = mkdtempSync(join(tmpdir(), 'dsh-millifraction-'))
     roots.push(root)
-    expect(readMillifractionCoordinates(root)).toEqual({ enabled: true })
+    expect(defaultMillifractionEnabled('win32')).toBe(true)
+    expect(defaultMillifractionEnabled('darwin')).toBe(false)
+    expect(defaultMillifractionEnabled('linux')).toBe(false)
+    expect(readMillifractionCoordinates(root)).toEqual({ enabled: defaultMillifractionEnabled() })
     expect(orbCoordinateModeFor(true)).toBe('millifraction')
     expect(orbCoordinateModeFor(false)).toBe('pixel')
   })
@@ -40,8 +44,8 @@ describe('millifraction coordinates config', () => {
     const root = mkdtempSync(join(tmpdir(), 'dsh-millifraction-bad-'))
     roots.push(root)
     writeFileSync(join(root, MILLIFRACTION_COORDINATES_FILE), '[]\n')
-    expect(readMillifractionCoordinates(root).enabled).toBe(true)
+    expect(readMillifractionCoordinates(root).enabled).toBe(defaultMillifractionEnabled())
     writeFileSync(join(root, MILLIFRACTION_COORDINATES_FILE), '{"enabled":"no"}\n')
-    expect(readMillifractionCoordinates(root).enabled).toBe(true)
+    expect(readMillifractionCoordinates(root).enabled).toBe(defaultMillifractionEnabled())
   })
 })

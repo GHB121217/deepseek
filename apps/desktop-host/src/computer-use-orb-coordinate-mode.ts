@@ -11,12 +11,19 @@ export const ORB_COORDINATE_MODES = ['millifraction', 'pixel'] as const
 /** One overlay Computer Use click encoding. */
 export type OrbCoordinateMode = (typeof ORB_COORDINATE_MODES)[number]
 
-/** Shipped encoding until Electron pushes a stored preference. New overlay chats start in millifraction. */
-export const DEFAULT_ORB_COORDINATE_MODE: OrbCoordinateMode = 'millifraction'
+/**
+ * Shipped encoding until Electron pushes a stored preference.
+ * Windows starts in millifraction. macOS and Linux start in pixels.
+ * @param platform - Node `process.platform`. Defaults to this process.
+ * @returns the encoding for a new overlay chat before a profile value arrives.
+ */
+export function defaultOrbCoordinateMode(platform: NodeJS.Platform = process.platform): OrbCoordinateMode {
+  return platform === 'win32' ? 'millifraction' : 'pixel'
+}
 
 /** Live overlay click encoding for Computer Use blank creates. */
 export interface OrbCoordinateModeService {
-  /** @returns the latest Electron-pushed encoding, or millifraction before the first push. */
+  /** @returns the latest Electron-pushed encoding, or the platform shipped default before the first push. */
   currentMode(): OrbCoordinateMode
 }
 
@@ -30,7 +37,7 @@ declare module '@deepseek-ai/cordis' {
 /** Cordis plugin name matching the Desktop overlay YAML id. */
 export const name = 'computer-use-orb-coordinate-mode'
 
-let mode: OrbCoordinateMode = DEFAULT_ORB_COORDINATE_MODE
+let mode: OrbCoordinateMode = defaultOrbCoordinateMode()
 
 /**
  * True when `value` is one of {@link ORB_COORDINATE_MODES}.
@@ -51,11 +58,11 @@ export function setOrbCoordinateMode(next: OrbCoordinateMode): void {
 }
 
 /**
- * Restore the shipped millifraction default. Tests reset module state between cases.
- * @returns nothing; module state is {@link DEFAULT_ORB_COORDINATE_MODE} afterwards.
+ * Restore the platform shipped default. Tests reset module state between cases.
+ * @returns nothing; module state is {@link defaultOrbCoordinateMode} afterwards.
  */
 export function clearOrbCoordinateMode(): void {
-  mode = DEFAULT_ORB_COORDINATE_MODE
+  mode = defaultOrbCoordinateMode()
 }
 
 /**
