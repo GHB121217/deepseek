@@ -1335,7 +1335,7 @@ async function main(): Promise<void> {
     // The release has no separate build number; omit Electron's bundle version.
     version: '',
     copyright: '',
-    iconPath: development ? join(app.getAppPath(), 'resources', 'icon-windows.png')
+    iconPath: development ? join(app.getAppPath(), 'build', 'icon.png')
       : join(process.resourcesPath, 'icon.png'),
   })
   // A custom application menu replaces Electron's default menu, so macOS needs
